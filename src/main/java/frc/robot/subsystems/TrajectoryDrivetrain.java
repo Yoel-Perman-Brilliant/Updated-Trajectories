@@ -32,7 +32,7 @@ public class TrajectoryDrivetrain extends OdometryDrivetrain {
         this.rightEncoder.reset();
         this.gyro.reset();
 
-        this.odometry = new DifferentialDriveOdometry(rotFromAngle(), new Pose2d(1,1, new Rotation2d()));
+        this.odometry = new DifferentialDriveOdometry(rotFromAngle());
 
         this.field2d = new Field2d();
         trajectoryNS = new RootNamespace("Trajectories");
@@ -40,8 +40,8 @@ public class TrajectoryDrivetrain extends OdometryDrivetrain {
         trajectoryNS.putNumber("gyro value", gyro::getAngle);
         trajectoryNS.putNumber("left encoder", leftEncoder::getDistance);
         trajectoryNS.putNumber("right encoder", rightEncoder::getDistance);
-        trajectoryNS.putNumber("x", odometry.getPoseMeters()::getX);
-        trajectoryNS.putNumber("y", odometry.getPoseMeters()::getY);
+        trajectoryNS.putNumber("x", () -> odometry.getPoseMeters().getX());
+        trajectoryNS.putNumber("y", () -> odometry.getPoseMeters().getY());
 
     }
 

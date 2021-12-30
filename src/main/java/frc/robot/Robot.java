@@ -9,18 +9,18 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-import com.spikes2212.command.drivetrains.commands.DriveArcade;
-import com.spikes2212.command.drivetrains.commands.DriveTank;
 import com.spikes2212.control.FeedForwardSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.dashboard.RootNamespace;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.TrajectoryDrivetrain;
 
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class Robot extends TimedRobot {
                 new WPI_VictorSPX(RobotMap.RIGHT_VICTOR__1), new WPI_VictorSPX(RobotMap.RIGHT_VICTOR_2));
 
         Encoder leftEncoder = new Encoder(0, 1);
-        Encoder rightEncoder = new Encoder(2, 3);
+        Encoder rightEncoder = new Encoder(3, 2);
         ADXRS450_Gyro gyro = new ADXRS450_Gyro();
 
         leftEncoder.setDistancePerPulse(DISTANCE_PER_PULSE);
@@ -72,32 +72,25 @@ public class Robot extends TimedRobot {
 
         drivetrain = new TrajectoryDrivetrain(leftSCG, rightSCG, leftEncoder, rightEncoder, gyro);
 
-//        Path path = Path.of(Filesystem.getDeployDirectory().getPath(), "turnRight.wpilib.json");
-//        Trajectory trajectory = null;
-//        try {
-//            trajectory = TrajectoryUtil.fromPathweaverJson(path);
-//        } catch (IOException e) {
-//            System.out.println("no trajectory, this is the error");
-//            e.printStackTrace();
-//        }
-//        final Trajectory trajectory1 = trajectory;
-//        RamseteCommand ramseteCommand = FollowTrajectory.getCommand(drivetrain, trajectory, leftPID, rightPID, ffs);
-//
-//        InstantCommand resetOdometry = new InstantCommand(() -> drivetrain.resetOdometry(trajectory1.getInitialPose()));
-//        SequentialCommandGroup followTrajectory = new SequentialCommandGroup(resetOdometry.andThen(ramseteCommand).andThen(() -> drivetrain.tankDriveVolts(0, 0)));
-//        root.putData("fucking move", followTrajectory);
-        Supplier<Double> speed = root.addConstantDouble("speed", 1);
-        DriveArcade driveArcade = new DriveArcade(drivetrain, OI::getRightY, OI::getLeftX);
-        root.putNumber("gyro value", gyro::getAngle);
-        root.putNumber("left encoder", leftEncoder::getDistance);
-        root.putNumber("right encoder", rightEncoder::getDistance);
-        drivetrain.setDefaultCommand(driveArcade);
-        root.putNumber("robot x", () -> drivetrain.getPose().getTranslation().getX());
-        root.putNumber("robot y", () -> drivetrain.getPose().getTranslation().getY());
-        root.putNumber("?/?", Math::random);
+        Path path = Path.of(Filesystem.getDeployDirectory().getPath(), "horizontal.wpilib.json");
+        Trajectory trajectory = null;
+        try {
+            trajectory = TrajectoryUtil.fromPathweaverJson(path);
+        } catch (IOException e) {
+            System.out.println("no trajectory, this is the error");
+            e.printStackTrace();
+        }
+        final Trajectory trajectory1 = trajectory;
+        RamseteCommand ramseteCommand = FollowTrajectory.getCommand(drivetrain, trajectory, leftPID, rightPID, ffs);
+
+        InstantCommand resetOdometry = new InstantCommand(() -> drivetrain.resetOdometry(trajectory1.getInitialPose()));
+        SequentialCommandGroup followTrajectory = new SequentialCommandGroup(resetOdometry.andThen(ramseteCommand).andThen(() -> drivetrain.tankDriveVolts(0, 0)));
+        root.putData("fucking move", followTrajectory);
+
+
 
         root.putData("reset odometry", new InstantCommand(()->
-                drivetrain.resetOdometry(new Pose2d(1, 1,new Rotation2d()))));
+                drivetrain.resetOdometry(new Pose2d(0, 0,new Rotation2d()))));
     }
 
     /**

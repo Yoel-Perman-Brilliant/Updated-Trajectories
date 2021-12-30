@@ -11,7 +11,7 @@ public class OI {
     }
 
     public static double getLeftY() {
-        return left.getY()*0.7;
+        return -left.getY()*0.7;
     }
 
     public static double getRightX() {
@@ -20,6 +20,6 @@ public class OI {
     }
 
     public static double getRightY() {
-        return right.getY()*0.7;
+        return -right.getY()*0.7;
     }
 }
